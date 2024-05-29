@@ -6,6 +6,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,16 +35,21 @@ public class EmployeeService implements EmployeeAPI {
 	@Autowired
 	private ModelMapper mapper;
 
+	@Autowired
+	private DiscoveryClient client2;
+
+	@Autowired
+	private LoadBalancerClient balancerClient;
 //	@Autowired
 //	private WebClient webClient;
 //	@Value("${addressservice.base.url}")
 //	private String addressUrl;
 
-//	public EmployeeService(@Value("${addressservice.base.url}") String addressUrl, RestTemplateBuilder builder) {
-//
-//		// TODO Auto-generated constructor stub
-//		this.restTemplate = builder.rootUri(addressUrl).build();
-//	}
+	public EmployeeService(@Value("${addressservice.base.url}") String addressUrl, RestTemplateBuilder builder) {
+
+		// TODO Auto-generated constructor stub
+		this.restTemplate = builder.rootUri(addressUrl).build();
+	}
 
 	@Autowired
 	private AddressFeignClient client;
@@ -70,10 +78,21 @@ public class EmployeeService implements EmployeeAPI {
 	public EmployeeDTO getEmployeeById(int id) {
 		// TODO Auto-generated method stub
 		EmployeeEntity emp = repo.getById(id);
-		AddressDTO address = client.getAddressByEmployeeId(id);
-		// webClient.get().uri("/" +
-		// id).retrieve().bodyToMono(AddressDTO.class).block();
-		// restTemplate.getForObject("/" + id, AddressDTO.class);
+
+//		List<ServiceInstance> instances = client2.getInstances("ADDRESS-APP");
+//		ServiceInstance instance = instances.get(0);
+//		
+//		String uri = instance.getUri().toString();
+
+		ServiceInstance instance = balancerClient.choose("ADDRESS-APP");
+
+		String uri = instance.getUri().toString();
+		AddressDTO address =
+				// client.getAddressByEmployeeId(id);
+				// webClient.get().uri("/" +
+				// id).retrieve().bodyToMono(AddressDTO.class).block();
+
+				restTemplate.getForObject(uri + "/address-service/address/" + id, AddressDTO.class);
 		EmployeeDTO e = mapper.map(emp, EmployeeDTO.class);
 		e.setAddress(address);
 		return e;

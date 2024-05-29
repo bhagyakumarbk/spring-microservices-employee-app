@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.employee.app.model.AddressDTO;
 
-@FeignClient(name = "address-app", url = "http://localhost:8080/address")
+@FeignClient(name = "ADDRESS-APP")
 public interface AddressFeignClient {
 
-	@PostMapping(path = "/create")
+	@PostMapping(path = "address-service/address/create")
 	AddressDTO createAddress(@RequestBody AddressDTO addressDTO);
 
-	@GetMapping(path = "/{id}")
+	@GetMapping(path = "address-service/address/{id}")
 	AddressDTO getAddressByEmployeeId(@PathVariable("id") int id);
 
 }

@@ -37,3 +37,31 @@
   to specify the desired HTTP endpoints.
 * Uses traditional callback-based mechanisms for handling asynchronous operations.
 * We can easily integrate feign client with service discovery and load balancer.
+
+Traditional Load Balancer
+
+* Service A is client and Service B is deployed on multiple instances/server and has a load balancer which is deployed on differenct server
+* Load Balancer helps to distribute the load across the instances whenever we get multiple requests.
+* Service A doesn't make call to service B directly instead it hits load balancer which routes to the registered services.
+* The traditional load balancer cannot be used in microservices that is because it converts one remote call to two remote calls
+  i.e., Service A hits load balancer and again load balancer will route to service B
+* If the load balancer is failed to start then client app is not aware how to connect to the services.
+* We need to manually configure server side applications to register for load balancer.
+
+Discovery Service
+
+* Whenever we configure Discovery service in an application it will manage all the host and port of that application and registers it
+* Whenever a client makes a call to server side discovery service helps providing the host details of that particular app
+
+For client side service discovery configuration we need to add this jar implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client
+
+* When the services starts they know where eureka server is usually runs and it is 8671. So they use the default localhost:8671/eureka to register themselves into the server
+
+What if the the eureka server ports is updated or changed?
+*Now we need to make the services route the eureka server to updated ports or host
+
+eureka.client.service-url.defaultZone=http://localhost:5000/eureka/ -> this property is used when we have eureka server running on different port and we have no zones available
+
+
+* Open Feign automatically handles load balancing 
+* THe load balancer has been fetched as a transitive dependency as part of Eureka client dependency
