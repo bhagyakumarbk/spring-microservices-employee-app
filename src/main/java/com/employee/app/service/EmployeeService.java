@@ -11,7 +11,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,6 +24,9 @@ import com.employee.app.model.EmployeeEntity;
 import com.employee.app.openfeign.AddressFeignClient;
 import com.employee.app.repository.EmployeeRepository;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -74,8 +79,11 @@ public class EmployeeService implements EmployeeAPI {
 		return e;
 	}
 
+	//@CircuitBreaker(name = "addressApp", fallbackMethod = "getFallback")
+//	@Retry(name="addressApp")
+	@RateLimiter(name = "addressApp")
 	@Override
-	public EmployeeDTO getEmployeeById(int id) {
+	public ResponseEntity<EmployeeDTO> getEmployeeById(int id) {
 		// TODO Auto-generated method stub
 		EmployeeEntity emp = repo.getById(id);
 
@@ -95,7 +103,11 @@ public class EmployeeService implements EmployeeAPI {
 				restTemplate.getForObject(uri + "/address-service/address/" + id, AddressDTO.class);
 		EmployeeDTO e = mapper.map(emp, EmployeeDTO.class);
 		e.setAddress(address);
-		return e;
+		return new ResponseEntity<EmployeeDTO>(e, HttpStatusCode.valueOf(200));
+	}
+	
+	public ResponseEntity<EmployeeDTO> getFallback(Exception e) {
+		return new ResponseEntity<EmployeeDTO>(new EmployeeDTO(), HttpStatusCode.valueOf(500));
 	}
 
 	@Override

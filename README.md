@@ -49,6 +49,7 @@ Traditional Load Balancer
 * We need to manually configure server side applications to register for load balancer.
 
 Discovery Service
+================
 
 * Whenever we configure Discovery service in an application it will manage all the host and port of that application and registers it
 * Whenever a client makes a call to server side discovery service helps providing the host details of that particular app
@@ -65,3 +66,36 @@ eureka.client.service-url.defaultZone=http://localhost:5000/eureka/ -> this prop
 
 * Open Feign automatically handles load balancing 
 * THe load balancer has been fetched as a transitive dependency as part of Eureka client dependency
+
+
+Circuit Breaker
+=================
+
+In microservice architecture its common to make a rest call from one service to another and the server application might be down or it will not respond
+When a microservice encounters an error, it will have an impact on other microservices that call it, and will also have a domino effect
+in such cases we can use Circuit breaker pattern
+
+The concept of a circuit breaker is to prevent calls to microservice when it’s known the call may fail or time out. This is done so that clients don’t waste their valuable resources handling requests that are likely to fail. 
+
+when we have circuit and it is in closed loop and when circuit is in closed loop then it is working 
+
+There are states in the circuit closed, open and half_open
+
+CLOSED - when circuit breaker is closed all the requests are passed
+if we make a call to other service which is down and those requests are failing. Here we define the threshold to monitor how many requests got failed with provided threshold then circuit will change the status from closed to open
+
+OPEN - When cicuit is OPEN no requests are allowed and can define wait duration for CB to be in the open state. and it will change to HALF_OPEN
+
+HALF_OPEN - it will allow few requests and check if it is working or not. Once the requests are good then it will change it to CLOSED state or else it will update to OPEN state
+
+
+if we have business exception that particular exception should not consider as an failure then we can define those exception in the CB and it will consider as success flow
+
+
+RETRY - The Retry pattern enables an application to retry an operation in the expectation that it'll succeed.
+When an error occurs, attempt to re-execute the code block until it succeeds or reaches the maximum number of attempts
+
+Rate-limiter - They manage the rate of traffic from clients or services, limiting the number of requests allowed within a specified period. If the request count exceeds the set limit defined by the rate limiter, all the excess calls are blocked
+
+
+

@@ -1,6 +1,7 @@
 package com.employee.app.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,7 @@ public class EmployeeController {
 	private EmployeeAPI api;
 
 	@GetMapping(path = "/employee/{id}")
-	public EmployeeDTO getEmployee(@PathVariable("id") int id) {
+	public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable("id") int id) {
 		return api.getEmployeeById(id);
 	}
 
